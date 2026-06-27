@@ -1,0 +1,31 @@
+# ============================================================================
+#  StilLista.pl — konfiguracja pluginu
+# ============================================================================
+# Plugin co kilkadziesiąt sekund pyta API StilLista.pl o nowe (nieodebrane)
+# głosy oddane na Twój serwer i automatycznie wykonuje za nie nagrody w grze.
+
+# Adres API listy serwerów. Zwykle nie trzeba tego zmieniać.
+api-url: "https://stillista.pl"
+
+# Klucz serwera. Skopiuj go z panelu: https://stillista.pl/dashboard/plugin
+# (sekcja "Klucze Twoich serwerów"). BEZ tego klucza plugin NIE będzie działać.
+server-key: ""
+
+# Co ile sekund odpytywać API o nowe głosy (minimum 10).
+poll-interval-seconds: 60
+
+# Czy nagradzać graczy, których nie ma online w momencie głosu?
+# true  -> nagroda zostaje w kolejce (pending.yml) i zostanie wydana, gdy gracz
+#          następnym razem wejdzie na serwer.
+# false -> głosy graczy offline są pomijane do czasu, aż będą online.
+reward-offline: true
+
+# Czy wysyłać graczowi wiadomość po odebraniu nagrody.
+claimed-message: true
+claimed-message-text: "&aDziękujemy za głos na &dStilLista.pl&a! Odebrano nagrodę."
+
+# Lista komend wykonywanych jako KONSOLA za każdy głos.
+# Użyj %player% jako miejsca na nick gracza. Kody kolorów z & są obsługiwane.
+rewards:
+  - "give %player% diamond 3"
+  - "broadcast &d%player% &7zagłosował na &dStilLista.pl&7! Dziękujemy!"

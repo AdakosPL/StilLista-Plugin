@@ -1,0 +1,20 @@
+name: StilLista
+main: pl.stillista.plugin.StilListaPlugin
+version: ${project.version}
+author: StilLista.pl
+description: Automatyczne nagrody za głosy oddane na StilLista.pl (PULL/API).
+# api-version is optional; declaring 1.13 silences the legacy-plugin warning on
+# modern servers while still loading fine on 1.8–1.12 (which ignore this key).
+api-version: "1.13"
+
+commands:
+  stillista:
+    description: Zarządzanie pluginem StilLista (reload konfiguracji).
+    usage: /stillista reload
+    permission: stillista.admin
+    aliases: [sl, stilista]
+
+permissions:
+  stillista.admin:
+    description: Dostęp do komend administracyjnych pluginu StilLista.
+    default: op

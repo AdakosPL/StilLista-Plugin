@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>pl.stillista</groupId>
+  <artifactId>StilLista</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>StilLista</name>
+  <description>StilLista.pl vote rewards integration for Bukkit/Spigot/Paper/Purpur servers.</description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+  </properties>
+
+  <repositories>
+    <!-- Spigot API (BuildTools / Nexus snapshots). -->
+    <repository>
+      <id>spigot-repo</id>
+      <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+    </repository>
+    <!-- Sonatype OSS (transitive deps for spigot-api). -->
+    <repository>
+      <id>sonatype</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
+
+  <dependencies>
+    <!--
+      We compile against the OLDEST common API (1.8.8) so the resulting bytecode
+      only references methods that exist across the entire 1.8 .. 26.x range.
+      The plugin deliberately uses ONLY long-stable Bukkit API (commands, console
+      dispatch, online-player lookup, scheduler, events) plus java.net for HTTP
+      and a hand-rolled JSON parser, so there are NO third-party runtime deps to
+      shade — keeping the jar tiny and load-safe across versions.
+    -->
+    <dependency>
+      <groupId>org.spigotmc</groupId>
+      <artifactId>spigot-api</artifactId>
+      <version>1.8.8-R0.1-SNAPSHOT</version>
+      <scope>provided</scope>
+      <!--
+        The legacy net.md-5:bungeecord-chat:1.8-SNAPSHOT transitive artifact was
+        removed from the Spigot snapshot repo, which breaks resolution. We only
+        use core Bukkit API (commands, players, scheduler, events, ChatColor,
+        YAML config) — none of the BaseComponent chat API — so we can safely
+        exclude it. The provided spigot-api is supplied by the server at runtime.
+      -->
+      <exclusions>
+        <exclusion>
+          <groupId>net.md-5</groupId>
+          <artifactId>bungeecord-chat</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>StilLista-${project.version}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+    </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+  </build>
+</project>
