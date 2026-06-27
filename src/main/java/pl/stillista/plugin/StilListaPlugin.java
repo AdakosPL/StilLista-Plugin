@@ -134,17 +134,51 @@ public final class StilListaPlugin extends JavaPlugin {
 
     // ----- Polling / processing --------------------------------------------
 
+    /** Consecutive failed poll cycles — used to keep transient blips quiet. */
+    private int pollFailStreak = 0;
+
     /** One poll cycle. Runs on an async scheduler thread. */
     private void pollOnce() {
+        // One immediate retry handles a single transient timeout; persistent
+        // failures are only warned about after a few cycles in a row so a flaky
+        // network doesn't spam the console (it self-heals on the next poll).
+        String body = null;
+        Exception lastError = null;
+        for (int attempt = 0; attempt < 2 && body == null; attempt++) {
+            try {
+                body = httpGet(apiUrl + "/api/plugin/queue?key=" + urlEncode(serverKey));
+            } catch (Exception ex) {
+                lastError = ex;
+                if (attempt == 0) {
+                    try {
+                        Thread.sleep(2000L);
+                    } catch (InterruptedException ignored) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+                }
+            }
+        }
+
+        if (body == null) {
+            pollFailStreak++;
+            if (lastError != null && pollFailStreak == 3) {
+                getLogger().warning("Brak połączenia z API StilLista ("
+                        + lastError.getMessage() + "). Ponawiam co cykl…");
+            }
+            return;
+        }
+
+        if (pollFailStreak >= 3) {
+            getLogger().info("Połączenie z API StilLista przywrócone.");
+        }
+        pollFailStreak = 0;
+
         final List<Vote> votes;
         try {
-            String body = httpGet(apiUrl + "/api/plugin/queue?key=" + urlEncode(serverKey));
-            if (body == null) {
-                return;
-            }
             votes = parseVotes(body);
         } catch (Exception ex) {
-            getLogger().warning("Błąd pobierania kolejki głosów: " + ex.getMessage());
+            getLogger().warning("Błąd parsowania kolejki głosów: " + ex.getMessage());
             return;
         }
 
@@ -298,8 +332,8 @@ public final class StilListaPlugin extends JavaPlugin {
             URL url = new URL(urlStr);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(15000);
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(20000);
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("X-Api-Key", serverKey);
             conn.setRequestProperty("User-Agent", "StilLista-Plugin/1.0.0");
@@ -326,8 +360,8 @@ public final class StilListaPlugin extends JavaPlugin {
             URL url = new URL(urlStr);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
-            conn.setConnectTimeout(10000);
-            conn.setReadTimeout(15000);
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(20000);
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
             conn.setRequestProperty("Accept", "application/json");
